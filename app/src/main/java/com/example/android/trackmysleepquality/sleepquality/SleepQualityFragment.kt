@@ -51,28 +51,32 @@ class SleepQualityFragment : Fragment() {
 
         val application = requireNotNull(this.activity).application
 
-        //Get the arguments
         val arguments = SleepQualityFragmentArgs.fromBundle(arguments!!)
 
-        //Get the dataSource
+        // Create an instance of the ViewModel Factory.
         val dataSource = SleepDatabase.getInstance(application).sleepDatabaseDao
-
-        //create a factory passing in the dataSource and sleepNightKey
         val viewModelFactory = SleepQualityViewModelFactory(arguments.sleepNightKey, dataSource)
 
-        //Get a SleepQualityViewModel reference
-        val sleepQualityViewModel = ViewModelProvider(this, viewModelFactory).get(SleepQualityViewModel::class.java)
+        // Get a reference to the ViewModel associated with this fragment.
+        val sleepQualityViewModel =
+                ViewModelProvider(
+                        this, viewModelFactory).get(SleepQualityViewModel::class.java)
 
-        //Add the sleepQualityViewModel to the binding object
+        // To use the View Model with data binding, you have to explicitly
+        // give the binding object a reference to it.
         binding.sleepQualityViewModel = sleepQualityViewModel
 
-        //add the observer
-        sleepQualityViewModel.navigateToSleepTracker.observe(this, Observer{
-            if(it==true){//observed state is true
-                this.findNavController().navigate(SleepQualityFragmentDirections.actionSleepQualityFragmentToSleepTrackerFragment())
+        // Add an Observer to the state variable for Navigating when a Quality icon is tapped.
+        sleepQualityViewModel.navigateToSleepTracker.observe(viewLifecycleOwner, Observer {
+            if (it == true) { // Observed state is true.
+                this.findNavController().navigate(
+                        SleepQualityFragmentDirections.actionSleepQualityFragmentToSleepTrackerFragment())
+                // Reset state to make sure we only navigate once, even if the device
+                // has a configuration change.
                 sleepQualityViewModel.doneNavigating()
             }
         })
+
         return binding.root
     }
 }

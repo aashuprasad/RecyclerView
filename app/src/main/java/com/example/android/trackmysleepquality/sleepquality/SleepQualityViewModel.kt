@@ -19,45 +19,76 @@ package com.example.android.trackmysleepquality.sleepquality
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.room.PrimaryKey
-import com.example.android.trackmysleepquality.database.SleepDatabase
+import androidx.lifecycle.viewModelScope
 import com.example.android.trackmysleepquality.database.SleepDatabaseDao
 import kotlinx.coroutines.*
 
+/**
+ * ViewModel for SleepQualityFragment.
+ *
+ * @param sleepNightKey The key of the current night we are working on.
+ */
 class SleepQualityViewModel(
         private val sleepNightKey: Long = 0L,
-        private val database: SleepDatabaseDao) : ViewModel() {
-    //Define a Job, uiScope, and override onCleared()
+        val database: SleepDatabaseDao) : ViewModel() {
+
+
+    /**
+     * viewModelJob allows us to cancel all coroutines started by this ViewModel.
+     */
     private val viewModelJob = Job()
-    private val uiScope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
-    //To navigate back to the SleepTrackerFragment, analogously implement navigateToSleepTracker and
-    // _navigateToSleepTracker, as well as doneNavigating()
-    private val _navigateToSleepTracker = MutableLiveData<Boolean>()
+    /**
+     * A [CoroutineScope] keeps track of all coroutines started by this ViewModel.
+     *
+     * Because we pass it [viewModelJob], any coroutine started in this scope can be cancelled
+     * by calling `viewModelJob.cancel()`
+     *
+     * By default, all coroutines started in uiScope will launch in [Dispatchers.Main] which is
+     * the main thread on Android. This is a sensible default because most coroutines started by
+     */
 
+    /**
+     * Variable that tells the fragment whether it should navigate to [SleepTrackerFragment].
+     *
+     * This is `private` because we don't want to expose the ability to set [MutableLiveData] to
+     * the [Fragment]
+     */
+    private val _navigateToSleepTracker = MutableLiveData<Boolean?>()
+
+    /**
+     * When true immediately navigate back to the [SleepTrackerFragment]
+     */
     val navigateToSleepTracker: LiveData<Boolean?>
-    get() = _navigateToSleepTracker
+        get() = _navigateToSleepTracker
 
-    fun doneNavigating(){
+    /**
+     *
+     */
+
+    /**
+     * Call this immediately after navigating to [SleepTrackerFragment]
+     */
+    fun doneNavigating() {
         _navigateToSleepTracker.value = null
     }
 
-    //create one click handler that you will use for all the smiley sleep quality images,
-    // onSetSleepQuality().
-    fun onSetSleepQuality( quality: Int){
-        uiScope.launch {
-            withContext(Dispatchers.IO){
-                val tonight = database.get(sleepNightKey) ?: return@withContext
+    /**
+     * Sets the sleep quality and updates the database.
+     *
+     * Then navigates back to the SleepTrackerFragment.
+     */
+    fun onSetSleepQuality(quality: Int) {
+        viewModelScope.launch {
+            // IO is a thread pool for running operations that access the disk, such as
+            // our Room database.
+                val tonight = database.get(sleepNightKey) ?: return@launch
                 tonight.sleepQuality = quality
                 database.update(tonight)
-            }
+
+            // Setting this state variable to true will alert the observer and trigger navigation.
             _navigateToSleepTracker.value = true
         }
     }
-
-
-    override fun onCleared() {
-        super.onCleared()
-        viewModelJob.cancel()
-    }
 }
+
