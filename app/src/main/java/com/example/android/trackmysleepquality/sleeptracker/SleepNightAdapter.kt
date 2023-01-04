@@ -38,7 +38,7 @@ class SleepNightAdapter(val clickListener: SleepNightListener) : ListAdapter<Sle
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
 
-        holder.bind(clickListener, getItem(position)!!)
+        holder.bind(clickListener, item)
     }
 
 
@@ -47,9 +47,8 @@ class SleepNightAdapter(val clickListener: SleepNightListener) : ListAdapter<Sle
         return ViewHolder.from(parent)
     }
 
-    class ViewHolder private constructor(val binding: ListItemSleepNightBinding) : RecyclerView.ViewHolder(binding.root) {
-        val quality: TextView = binding.qualityString
-        val qualityImage: ImageView = binding.qualityImage
+    class ViewHolder private constructor(val binding: ListItemSleepNightBinding)
+        : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(clickListener: SleepNightListener, item: SleepNight) {
             binding.sleep = item
@@ -65,10 +64,6 @@ class SleepNightAdapter(val clickListener: SleepNightListener) : ListAdapter<Sle
                 return ViewHolder(binding)
             }
         }
-    }
-
-    class SleepNightListener(val clickListener: (sleepId: Long) -> Unit){
-        fun onClick(night: SleepNight) = clickListener(night.nightId)
     }
 }
 
@@ -86,4 +81,8 @@ class SleepNightDiffCallback : DiffUtil.ItemCallback<SleepNight>() {
     override fun areContentsTheSame(oldItem: SleepNight, newItem: SleepNight): Boolean {
         return oldItem == newItem
     }
+}
+
+class SleepNightListener(val clickListener: (sleepId: Long) -> Unit){
+    fun onClick(night: SleepNight) = clickListener(night.nightId)
 }

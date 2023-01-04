@@ -10,7 +10,7 @@
 
         <variable
             name="clickListener"
-            type="com.example.android.trackmysleepquality.sleeptracker.SleepNightAdapter.SleepNightListener" />
+            type="com.example.android.trackmysleepquality.sleeptracker.SleepNightListener" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -30,9 +30,10 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ImageContrastCheck"
-            tools:srcCompat="@drawable/ic_sleep_5"
             android:contentDescription="@string/smiley_image"
-            app:sleepImage = "@{sleep}"/>
+            app:sleepImage = "@{sleep}"
+            tools:srcCompat="@drawable/ic_sleep_5"
+            />
 
         <TextView
             android:id="@+id/quality_string"
